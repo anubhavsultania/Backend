@@ -1,31 +1,17 @@
 import express from "express";
 import path from "path";
-import sqlite3 from "sqlite3";
 import session from "express-session";
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
 import { fileURLToPath } from "url";
+import db from "./db.js";
+import {
+    isAuthenticated,
+    isGuest
+} from "./middleware/auth.js";
 
+dotenv.config();
 const app = express();
-
-/* =========================
-   Database Connection
-========================= */
-
-const db = new sqlite3.Database("./database/users.db", (err) => {
-    if (err) {
-        console.error(err.message);
-    } else {
-        console.log("Connected to database");
-    }
-});
-
-db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
-        password TEXT
-    )
-`);
 
 /* =========================
    Path Configuration
@@ -42,11 +28,14 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
     session({
-        secret: "mySecretKey",
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false
     })
 );
+
+app.use(express.static(path.join(__dirname, '../public')));
+
 
 /* =========================
    Routes
@@ -54,17 +43,17 @@ app.use(
 
 /* Login Page */
 
-app.get("/", (req, res) => {
+app.get(["/", "/login"], isGuest, (req, res) => {
     res.sendFile(
-        path.join(__dirname, "public", "login.html")
+        path.join(__dirname, "../public", "login.html")
     );
 });
 
 /* Register Page */
 
-app.get("/register", (req, res) => {
+app.get("/register", isGuest, (req, res) => {
     res.sendFile(
-        path.join(__dirname, "public", "register.html")
+        path.join(__dirname, "../public", "register.html")
     );
 });
 
@@ -86,7 +75,8 @@ app.post("/register", async (req, res) => {
                     return res.status(400).send("User already exists");
                 }
 
-                res.status(201).send("Registration successful");
+                // res.status(201).send("Registration successful");
+                res.redirect("/login");
             }
         );
     } catch (error) {
@@ -137,12 +127,8 @@ app.post("/login", (req, res) => {
 
 /* Dashboard */
 
-app.get("/dashboard", (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).send("Please login first");
-    }
-
-    res.send("Welcome to Dashboard");
+app.get("/dashboard", isAuthenticated, (req, res) => {
+    res.sendFile( path.join(__dirname, "../public", "dashboard.html"));
 });
 
 /* Logout */
@@ -162,7 +148,7 @@ app.get("/logout", (req, res) => {
    Start Server
 ========================= */
 
-const PORT = 3000;
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
