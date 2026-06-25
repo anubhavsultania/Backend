@@ -1,20 +1,11 @@
 import express from "express"
 import db from "../db.js";
 import { isAuthenticated } from "../middleware/auth.js";
+import { getTasks } from "../controllers/taskController.js";
 
 const router = express.Router();
 
-router.get('/', isAuthenticated, (req, res) => {
-    const userId = req.session.userId;
-    db.all(`SELECT * FROM tasks 
-        WHERE user_id = ?
-    `, [userId], (err, rows) => {
-        if(err) {
-            return res.status(500).send(err.message);
-        }
-        return res.json(rows);
-    });
-});
+router.get('/', isAuthenticated, getTasks);
 
 router.get("/:id", isAuthenticated, (req, res) => {
     const taskId = req.params.id;
@@ -93,6 +84,28 @@ router.delete('/:id', isAuthenticated, (req, res) => {
             message: "Task deleted"
         });
     });
-})
+});
+
+router.patch('/:id/complete', isAuthenticated, (req, res) => {
+    const userId = req.session.userId;
+    const taskId = req.params.id;
+
+    db.run(`UPDATE tasks
+        SET completed = 1
+        WHERE user_id = ?
+        AND id = ?
+    `, [userId, taskId], function (err) {
+        if(err) {
+           return res.status(500).send(err.message);
+        }
+        if(this.changes === 0) {
+            return res.status(404).send("Task not found");
+        }
+        return res.json({
+            message: "Task completed"
+        });
+    })
+
+});
 
 export default router;

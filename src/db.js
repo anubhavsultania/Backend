@@ -29,4 +29,12 @@ db.run(`
     )
 `);
 
+db.run(
+    `ALTER TABLE tasks ADD COLUMN completed INTEGER DEFAULT 0`,
+    (err) => {
+        if (err && !err.message.includes("duplicate column name")) {
+            console.error(err.message);
+        }
+    }
+);
 export default db;
