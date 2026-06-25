@@ -68,8 +68,31 @@ router.patch('/:id', isAuthenticated, (req, res) => {
         if (this.changes === 0) {
             return res.status(404).send("Task not found");
         }
-        return res.send("Task updated");
+        return res.status(201).json({
+            message: "Task Created"
+        });
     });
 });
+
+router.delete('/:id', isAuthenticated, (req, res) => {
+    const taskId = req.params.id;
+    const userId = req.session.userId;
+
+    db.run(`
+        DELETE FROM tasks
+        WHERE user_id = ?
+        AND id = ?
+    `, [userId, taskId], function (err) {
+        if(err) {
+            return res.status(500).send(err.message);
+        }
+        if(this.changes === 0) {
+            return res.status(404).send("Task not found");
+        }
+        return res.json({
+            message: "Task deleted"
+        });
+    });
+})
 
 export default router;
