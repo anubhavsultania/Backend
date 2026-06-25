@@ -38,7 +38,7 @@ app.use(
 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/', authRoutes);
-app.use('/', taskRoutes);
+app.use('/tasks', taskRoutes);
 
 
 /* =========================

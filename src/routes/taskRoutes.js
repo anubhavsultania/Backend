@@ -4,10 +4,10 @@ import { isAuthenticated } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get('/tasks', isAuthenticated, (req, res) => {
+router.get('/', isAuthenticated, (req, res) => {
     const userId = req.session.userId;
     db.all(`SELECT * FROM tasks 
-        where user_id = ?
+        WHERE user_id = ?
     `, [userId], (err, rows) => {
         if(err) {
             return res.status(500).send(err.message);
@@ -16,7 +16,24 @@ router.get('/tasks', isAuthenticated, (req, res) => {
     });
 });
 
-router.post('/tasks', isAuthenticated, (req, res) => {
+router.get("/:id", isAuthenticated, (req, res) => {
+    const taskId = req.params.id;
+    const userId = req.session.userId;
+    db.get(`SELECT * FROM tasks
+        WHERE user_id = ?
+        AND id = ?
+    `, [userId, taskId], (err, row) => {
+        if(err) {
+            return res.status(500).send(err.message);
+        }
+        else if(!row) {
+            return res.status(404).send("Task not found");
+        }
+        return res.json(row);
+    })
+});
+
+router.post('/', isAuthenticated, (req, res) => {
     const userId = req.session.userId;
     const {title} = req.body;
     if(!title || title.trim() === "") {
@@ -31,6 +48,28 @@ router.post('/tasks', isAuthenticated, (req, res) => {
                 message: "Task Created"
             });
         });
+});
+
+router.patch('/:id', isAuthenticated, (req, res) => {
+    const userId = req.session.userId;
+    const {title} = req.body;
+    const taskId = req.params.id;
+    if(!title || title.trim() === "") {
+        return res.status(400).send("Title is required");
+    }
+    db.run(`UPDATE tasks
+            SET title = ?
+            WHERE user_id = ?
+            AND id = ?
+    `, [title, userId, taskId], function (err) {
+        if(err) {
+            return res.status(500).send(err.message);
+        }
+        if (this.changes === 0) {
+            return res.status(404).send("Task not found");
+        }
+        return res.send("Task updated");
+    });
 });
 
 export default router;
