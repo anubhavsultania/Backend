@@ -11,6 +11,7 @@ import {
     isAuthenticated,
     isGuest
 } from "./middleware/auth.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config();
 const app = express();
@@ -63,6 +64,12 @@ app.get("/logout", (req, res) => {
         res.send("Logged out successfully");
     });
 });
+
+/* =========================
+   Error Handling
+========================= */
+
+app.use(errorHandler);
 
 /* =========================
    Start Server
