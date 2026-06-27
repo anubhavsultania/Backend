@@ -1,12 +1,13 @@
 import db from "../db.js";
 import { getTasksbyUserId } from "../services/taskService.js";
 
-export function getTasks(req, res, next) {
-    const userId = req.session.userId;
-    getTasksbyUserId(userId, (err, rows) => {
-        if(err) {
-            return next(err);
-        }
+export async function getTasks(req, res, next) {
+    try {
+        const userId = req.session.userId;
+        const rows = await getTasksbyUserId(userId);
         return res.json(rows);
-    });
+    }
+    catch (err){
+        next(err);
+    }
 };
