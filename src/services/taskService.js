@@ -1,14 +1,8 @@
-import db from "../db.js"
+import * as database from "../database"
 
 export function getTasksbyUserId(userId) {
-    return new Promise((resolve, reject) => {
-        db.all(`SELECT * FROM tasks 
+    return database.all(`SELECT * FROM tasks 
         WHERE user_id = ?
-        `, [userId], (err, row) => {
-            if(err) {
-                return reject(err);
-            }
-            resolve(row);
-        });
-    });
-};
+        `, [userId]
+    );
+}
