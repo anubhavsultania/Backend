@@ -6,3 +6,10 @@ export function getTasksbyUserId(userId) {
         `, [userId]
     );
 }
+
+export function searchTasksByTitle(title, userId) {
+    const searchPattern = `%${title}%`;
+    return database.all(`SELECT id, title FROM tasks
+        WHERE LOWER(title) like LOWER(?)
+        AND user_id = ?`, [searchPattern, userId]);
+}

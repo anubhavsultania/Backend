@@ -1,12 +1,12 @@
 import express from "express"
 import db from "../db.js";
 import { isAuthenticated } from "../middleware/auth.js";
-import { getTasks } from "../controllers/taskController.js";
+import { getTasks, searchTasks } from "../controllers/taskController.js";
 
 const router = express.Router();
 
 router.get('/', isAuthenticated, getTasks);
-
+router.get('/search', isAuthenticated, searchTasks);
 router.get("/:id", isAuthenticated, (req, res) => {
     const taskId = req.params.id;
     const userId = req.session.userId;
