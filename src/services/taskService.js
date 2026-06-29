@@ -1,15 +1,29 @@
-import * as database from "../database/database.js"
+import * as database from "../database/database.js";
 
 export function getTasksbyUserId(userId) {
-    return database.all(`SELECT * FROM tasks 
+  return database.all(
+    `SELECT * FROM tasks 
         WHERE user_id = ?
-        `, [userId]
-    );
+        `,
+    [userId],
+  );
 }
 
 export function searchTasksByTitle(title, userId) {
-    const searchPattern = `%${title}%`;
-    return database.all(`SELECT id, title FROM tasks
+  const searchPattern = `%${title}%`;
+  return database.all(
+    `SELECT id, title FROM tasks
         WHERE LOWER(title) like LOWER(?)
-        AND user_id = ?`, [searchPattern, userId]);
+        AND user_id = ?`,
+    [searchPattern, userId],
+  );
+}
+
+export function getTasksbyTaskId(title, userId) {
+  return database.get(
+    `SELECT * FROM tasks WHERE user_id = ?
+        AND id = ?
+    `,
+    [userId, taskId],
+  );
 }

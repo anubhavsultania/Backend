@@ -1,17 +1,15 @@
 export function isAuthenticated(req, res, next) {
+  if (!req.session.userId) {
+    return res.redirect("/");
+  }
 
-    if (!req.session.userId) {
-        return res.redirect("/");
-    }
-
-    next();
+  next();
 }
 
 export function isGuest(req, res, next) {
+  if (req.session.userId) {
+    return res.redirect("/dashboard");
+  }
 
-    if(req.session.userId) {
-        return res.redirect("/dashboard");
-    }
-
-    next(); 
+  next();
 }

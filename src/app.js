@@ -7,10 +7,7 @@ import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import db from "./db.js";
-import {
-    isAuthenticated,
-    isGuest
-} from "./middleware/auth.js";
+import { isAuthenticated, isGuest } from "./middleware/auth.js";
 import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config();
@@ -30,17 +27,16 @@ const __dirname = path.dirname(__filename);
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
-    session({
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: false
-    })
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  }),
 );
 
-app.use(express.static(path.join(__dirname, '../public')));
-app.use('/', authRoutes);
-app.use('/tasks', taskRoutes);
-
+app.use(express.static(path.join(__dirname, "../public")));
+app.use("/", authRoutes);
+app.use("/tasks", taskRoutes);
 
 /* =========================
    Routes
@@ -49,20 +45,20 @@ app.use('/tasks', taskRoutes);
 /* Dashboard */
 
 app.get("/dashboard", isAuthenticated, (req, res) => {
-    res.sendFile( path.join(__dirname, "../public", "dashboard.html"));
+  res.sendFile(path.join(__dirname, "../public", "dashboard.html"));
 });
 
 /* Logout */
 
 app.get("/logout", (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).send("Logout failed");
-        }
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).send("Logout failed");
+    }
 
-        res.clearCookie("connect.sid");
-        res.send("Logged out successfully");
-    });
+    res.clearCookie("connect.sid");
+    res.send("Logged out successfully");
+  });
 });
 
 /* =========================
@@ -78,5 +74,5 @@ app.use(errorHandler);
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

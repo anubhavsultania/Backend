@@ -5,11 +5,11 @@ import sqlite3 from "sqlite3";
 ========================= */
 
 const db = new sqlite3.Database("./database/users.db", (err) => {
-    if (err) {
-        console.error(err.message);
-    } else {
-        console.log("Connected to database");
-    }
+  if (err) {
+    console.error(err.message);
+  } else {
+    console.log("Connected to database");
+  }
 });
 
 db.run(`
@@ -29,12 +29,9 @@ db.run(`
     )
 `);
 
-db.run(
-    `ALTER TABLE tasks ADD COLUMN completed INTEGER DEFAULT 0`,
-    (err) => {
-        if (err && !err.message.includes("duplicate column name")) {
-            console.error(err.message);
-        }
-    }
-);
+db.run(`ALTER TABLE tasks ADD COLUMN completed INTEGER DEFAULT 0`, (err) => {
+  if (err && !err.message.includes("duplicate column name")) {
+    console.error(err.message);
+  }
+});
 export default db;
