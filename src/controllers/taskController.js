@@ -1,14 +1,15 @@
 import db from "../db.js";
 import {
-  getTasksbyUserId,
+  getTasksByUserId,
   searchTasksByTitle,
-  getTasksbyTaskId,
+  getTasksByTaskId,
 } from "../services/taskService.js";
 
 export async function getTasks(req, res, next) {
   try {
     const userId = req.session.userId;
-    const rows = await getTasksbyUserId(userId);
+    const { sort, order } = req.query;
+    const rows = await getTasksByUserId(userId, sort, order);
     return res.json(rows);
   } catch (error) {
     next(error);
@@ -33,8 +34,8 @@ export async function getTasksbyId(req, res, next) {
   try {
     const userId = req.session.userId;
     const taskId = req.params.id;
-    const tasks = await getTasksbyTaskId(userId, taskId);
-    if (!task) {
+    const tasks = await getTasksByTaskId(userId, taskId);
+    if (!tasks) {
       return res.status(404).json({
         message: "Task not found",
       });

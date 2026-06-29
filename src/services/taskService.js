@@ -1,9 +1,20 @@
 import * as database from "../database/database.js";
 
-export function getTasksbyUserId(userId) {
+export function getTasksByUserId(userId, sort = "title", order = "asc") {
+  const allowedColumns = ["title", "completed"];
+  const allowedOrder = ["ASC", "DESC"];
+  if (
+    !allowedColumns.includes(sort) ||
+    !allowedOrder.includes(order.toUpperCase())
+  ) {
+    const error = new Error("Bad Request");
+    error.status = 400;
+    throw error;
+  }
   return database.all(
     `SELECT * FROM tasks 
         WHERE user_id = ?
+        ORDER BY ${sort} ${order}
         `,
     [userId],
   );
@@ -19,7 +30,7 @@ export function searchTasksByTitle(title, userId) {
   );
 }
 
-export function getTasksbyTaskId(title, userId) {
+export function getTasksByTaskId(userId, taskId) {
   return database.get(
     `SELECT * FROM tasks WHERE user_id = ?
         AND id = ?
