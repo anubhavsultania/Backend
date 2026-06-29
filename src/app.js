@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 import db from "./db.js";
 import { isAuthenticated, isGuest } from "./middleware/auth.js";
 import errorHandler from "./middleware/errorHandler.js";
@@ -37,16 +38,11 @@ app.use(
 app.use(express.static(path.join(__dirname, "../public")));
 app.use("/", authRoutes);
 app.use("/tasks", taskRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 /* =========================
    Routes
 ========================= */
-
-/* Dashboard */
-
-app.get("/dashboard", isAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, "../public", "dashboard.html"));
-});
 
 /* Logout */
 
