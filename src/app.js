@@ -39,10 +39,6 @@ app.use(express.static(path.join(__dirname, "../public")));
 app.use("/", authRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/dashboard", dashboardRoutes);
-
-/* =========================
-   Routes
-========================= */
 /* =========================
    Error Handling
 ========================= */
