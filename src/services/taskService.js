@@ -1,6 +1,8 @@
 import * as database from "../database/database.js";
+import { getPaginationData } from "../utils/pagination.js";
+import { badRequest } from "../utils/badRequests.js";
 
-export function getTasksByUserId(
+export async function getTasksByUserId(
   userId,
   sort = "title",
   order = "asc",
@@ -16,7 +18,7 @@ export function getTasksByUserId(
   const maxLimit = 100;
   const invalidSort = !allowedColumns.includes(sort);
 
-  const invalidOrder = !allowedOrder.includes(order.toUpperCase());
+  const invalidOrder = !allowedOrder.includes(order);
 
   const invalidPage =
     Number.isNaN(pageNum) || !Number.isInteger(pageNum) || pageNum < 1;
@@ -27,20 +29,27 @@ export function getTasksByUserId(
     limitNum < 1 ||
     limitNum > maxLimit;
 
-  if (invalidSort || invalidOrder || invalidPage || invalidLimit) {
-    const error = new Error("Bad Request");
-    error.status = 400;
-    throw error;
-  }
+  if (invalidSort) throw badRequest("Invalid sort field");
+  if (invalidOrder) throw badRequest("Invalid sort order. Use ASC or DESC");
+  if (invalidPage) throw badRequest("Page must be a positive integer");
+  if (invalidLimit)
+    throw badRequest("Limit must be an integer between 1 and 100");
   const offset = (pageNum - 1) * limitNum;
-  return database.all(
-    `SELECT * FROM tasks 
+  const [userData, paginationData] = await Promise.all([
+    database.all(
+      `SELECT * FROM tasks 
         WHERE user_id = ?
         ORDER BY ${sort} ${order}
         LIMIT ? OFFSET ?
         `,
-    [userId, limitNum, offset],
-  );
+      [userId, limitNum, offset],
+    ),
+    getPaginationData(userId, pageNum, limitNum),
+  ]);
+  return {
+    data: userData,
+    pagination: paginationData,
+  };
 }
 
 export function searchTasksByTitle(title, userId) {

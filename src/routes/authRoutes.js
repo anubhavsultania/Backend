@@ -3,7 +3,13 @@ import path from "path";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import { fileURLToPath } from "url";
-import { getLoginPage, getRegisterPage, loginUser, logoutUser, registerUser } from "../controllers/authController.js";
+import {
+  getLoginPage,
+  getRegisterPage,
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "../controllers/authController.js";
 import db from "../db.js";
 import { isAuthenticated, isGuest } from "../middleware/auth.js";
 

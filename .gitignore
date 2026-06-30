@@ -1,4 +1,5 @@
 node_modules/
+Helpful things/
 .env
 # database/*.db
 # *.log

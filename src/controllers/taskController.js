@@ -8,7 +8,7 @@ import {
 export async function getTasks(req, res, next) {
   try {
     const userId = req.session.userId;
-    const { sort, order, page, limit} = req.query;
+    const { sort, order, page, limit } = req.query;
     const rows = await getTasksByUserId(userId, sort, order, page, limit);
     return res.json(rows);
   } catch (error) {
