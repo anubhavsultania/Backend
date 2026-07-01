@@ -34,4 +34,18 @@ db.run(`ALTER TABLE tasks ADD COLUMN completed INTEGER DEFAULT 0`, (err) => {
     console.error(err.message);
   }
 });
+
+db.run(`
+CREATE TABLE IF NOT EXISTS projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL CHECK(TRIM(name) <> ''),
+    user_id INTEGER NOT NULL,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    UNIQUE(user_id, name)
+)
+`);
 export default db;
