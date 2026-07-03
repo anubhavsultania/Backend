@@ -18,11 +18,8 @@ export async function getTasks(req, res, next) {
 
 export async function searchTasks(req, res, next) {
   try {
-    const { title } = req.query;
+    const { title } = req.validatedData;
     const userId = req.session.userId;
-    if (!title || title.trim() === "") {
-      return res.status(400).send("Title is required");
-    }
     const searchResult = await searchTasksByTitle(title, userId);
     return res.json(searchResult);
   } catch (error) {

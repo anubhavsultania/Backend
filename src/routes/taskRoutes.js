@@ -1,12 +1,19 @@
 import express from "express";
 import db from "../db.js";
+import { searchTasksSchema } from "../validators/taskValidators.js";
+import { validate } from "../middleware/validate.js";
 import { isAuthenticated } from "../middleware/auth.js";
 import { getTasks, searchTasks } from "../controllers/taskController.js";
 
 const router = express.Router();
 
 router.get("/", isAuthenticated, getTasks);
-router.get("/search", isAuthenticated, searchTasks);
+router.get(
+  "/search",
+  isAuthenticated,
+  validate(searchTasksSchema, "query"),
+  searchTasks,
+);
 router.get("/:id", isAuthenticated, (req, res) => {
   const taskId = req.params.id;
   const userId = req.session.userId;
