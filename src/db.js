@@ -48,4 +48,13 @@ CREATE TABLE IF NOT EXISTS projects (
     UNIQUE(user_id, name)
 )
 `);
+db.run(
+  `ALTER TABLE tasks ADD COLUMN project_id INTEGER,
+FOREIGN KEY (project_id) REFERENCES projects(id)`,
+  (err) => {
+    if (err && !err.message.includes("duplicate column name")) {
+      console.error(err.message);
+    }
+  },
+);
 export default db;
