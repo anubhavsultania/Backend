@@ -35,3 +35,32 @@ export function run(sql, params = []) {
     });
   });
 }
+
+export function beginTransaction() {
+  return new Promise((resolve, reject) => {
+    db.run("BEGIN TRANSACTION", (err) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve();
+    });
+  });
+}
+
+export function commitTransaction() {
+  return new Promise((resolve, reject) => {
+    db.run("COMMIT", (err) => {
+      if (err) return reject(err);
+      return resolve();
+    });
+  });
+}
+
+export function rollbackTransaction() {
+  return new Promise((resolve, reject) => {
+    db.run("ROLLBACK", (err) => {
+      if (err) return reject(err);
+      return resolve();
+    });
+  });
+}
