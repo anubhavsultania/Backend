@@ -29,8 +29,12 @@ export function getRegisterPage(req, res) {
 export async function registerUser(req, res, next) {
   try {
     const { email, password } = req.body;
-    await registerUserInDb(email, password);
-    res.redirect("/dashboard");
+    const userId = await registerUserInDb(email, password);
+    req.session.userId = userId;
+    req.session.save((err) => {
+      if (err) return next(err);
+      res.redirect("/dashboard");
+    });
   } catch (error) {
     next(error);
   }

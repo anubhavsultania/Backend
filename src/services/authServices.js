@@ -30,6 +30,7 @@ export async function registerUserInDb(email, password) {
     );
     await createDefaultProject(userId);
     await database.commitTransaction();
+    return userId;
   } catch (err) {
     try {
       await database.rollbackTransaction();
