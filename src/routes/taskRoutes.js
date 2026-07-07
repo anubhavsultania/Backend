@@ -1,9 +1,13 @@
 import express from "express";
 import db from "../db.js";
-import { searchTasksSchema } from "../validators/taskValidators.js";
+import { idSchema, titleSchema } from "../validators/taskValidators.js";
 import { validate } from "../middleware/validate.js";
 import { isAuthenticated } from "../middleware/auth.js";
-import { getTasks, searchTasks } from "../controllers/taskController.js";
+import {
+  getTasks,
+  searchTasks,
+  moveTask,
+} from "../controllers/taskController.js";
 
 const router = express.Router();
 
@@ -11,7 +15,7 @@ router.get("/", isAuthenticated, getTasks);
 router.get(
   "/search",
   isAuthenticated,
-  validate(searchTasksSchema, "query"),
+  validate(titleSchema, "query"),
   searchTasks,
 );
 router.get("/:id", isAuthenticated, (req, res) => {
@@ -133,4 +137,11 @@ router.patch("/:id/complete", isAuthenticated, (req, res) => {
   );
 });
 
+router.patch(
+  "/:id/project",
+  isAuthenticated,
+  validate(idSchema, "params"),
+  validate(idSchema, "body"),
+  moveTask,
+);
 export default router;

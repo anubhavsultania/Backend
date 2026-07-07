@@ -3,6 +3,7 @@ import {
   getTasksByUserId,
   searchTasksByTitle,
   getTasksByTaskId,
+  moveTaskToNewProject,
 } from "../services/taskService.js";
 
 export async function getTasks(req, res, next) {
@@ -38,6 +39,18 @@ export async function getTasksbyId(req, res, next) {
       });
     }
     res.json(tasks);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function moveTask(req, res, next) {
+  try {
+    const taskId = req.validatedData.params.id;
+    const newProjectId = req.validatedData.body.id;
+    const userId = req.session.userId;
+    await moveTaskToNewProject(taskId, userId, newProjectId);
+    return res.sendStatus(204);
   } catch (error) {
     next(error);
   }
