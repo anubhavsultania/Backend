@@ -19,8 +19,11 @@ export async function createProject(req, res, next) {
   try {
     const userId = req.session.userId;
     const { title } = req.validatedData.body;
-    await createNewProject(userId, title);
-    return res.status(201).json({ message: "Project is created" });
+    const { lastID: newId } = await createNewProject(userId, title);
+    return res.status(201).json({
+      id: newId,
+      name: title,
+    });
   } catch (error) {
     next(error);
   }

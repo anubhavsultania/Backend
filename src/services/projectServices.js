@@ -1,9 +1,9 @@
-import { da } from "zod/locales";
 import * as database from "../database/database.js";
 import { translateDatabaseError } from "../utils/badRequests.js";
 import { moveTaskToInbox } from "./taskService.js";
+
 export function createDefaultProject(userId) {
-  database.run(
+  return database.run(
     `INSERT INTO projects (name, user_id, type)
           VALUES ('Inbox', ?, 'INBOX')`,
     [userId],
@@ -11,10 +11,10 @@ export function createDefaultProject(userId) {
 }
 
 export function getProjectsByUserId(userId) {
-  return database.run(
+  return database.all(
     `
     SELECT id, name
-    FROM project 
+    FROM projects
     WHERE user_id = ?
     `,
     [userId],
@@ -23,7 +23,7 @@ export function getProjectsByUserId(userId) {
 
 export async function createNewProject(userId, title) {
   try {
-    await database.run(
+    return database.run(
       `
       INSERT INTO projects (type, name, user_id)
        VALUES ('NORMAL', ?, ?)
@@ -50,8 +50,12 @@ export async function deleteProjectWithID(userId, projectId) {
       error.status = 403;
       throw error;
     }
-    await moveTaskToInbox(userId, projectId, result.id);
-    const result = await database.run(
+    const { id: newProjectId } = await getProjectsByProjectType(
+      userId,
+      "INBOX",
+    );
+    await moveTaskToInbox(userId, projectId, newProjectId);
+    await database.run(
       `
     DELETE FROM projects 
     WHERE user_id = ?
@@ -78,7 +82,7 @@ export async function renameProjectWithId(userId, projectId, title) {
     error.status = 404;
     throw error;
   }
-  const result = await database.run(
+  return database.run(
     `
       UPDATE projects
       SET name = ?
@@ -89,7 +93,7 @@ export async function renameProjectWithId(userId, projectId, title) {
   );
 }
 
-export function getProjectsByProjectID(userId, ProjectId) {
+export function getProjectsByProjectID(userId, projectId) {
   return database.get(
     `
       SELECT type, id
@@ -98,5 +102,17 @@ export function getProjectsByProjectID(userId, ProjectId) {
       AND id = ? 
     `,
     [userId, projectId],
+  );
+}
+
+export function getProjectsByProjectType(userId, type) {
+  return database.get(
+    `
+      SELECT *
+      FROM projects
+      WHERE user_id = ?
+      AND type = ? 
+    `,
+    [userId, type],
   );
 }

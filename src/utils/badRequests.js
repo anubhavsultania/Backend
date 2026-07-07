@@ -22,7 +22,7 @@ export function translateDatabaseError(err, entity) {
   }
 
   if (err.message.includes("FOREIGN KEY")) {
-    const error = new Error("Invalid user");
+    const error = new Error("Invalid reference");
     error.status = 400;
     throw error;
   }
