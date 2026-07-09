@@ -9,11 +9,12 @@ import {
 export async function getTasks(req, res, next) {
   try {
     const userId = req.session.userId;
-    const { sort, order, page, limit } = req.query;
-    const rows = await getTasksByUserId(userId, sort, order, page, limit);
-    return res.json(rows);
-  } catch (error) {
-    next(error);
+
+    const result = await getTasksByUserId(userId, req.validatedData.query);
+
+    return res.json(result);
+  } catch (err) {
+    next(err);
   }
 }
 

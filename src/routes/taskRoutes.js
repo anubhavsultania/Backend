@@ -1,6 +1,10 @@
 import express from "express";
 import db from "../db.js";
-import { idSchema, titleSchema } from "../validators/taskValidators.js";
+import {
+  idSchema,
+  titleSchema,
+  getTasksSchema,
+} from "../validators/taskValidators.js";
 import { validate } from "../middleware/validate.js";
 import { isAuthenticated } from "../middleware/auth.js";
 import {
@@ -11,7 +15,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", isAuthenticated, getTasks);
+router.get("/", isAuthenticated, validate(getTasksSchema, "query"), getTasks);
 router.get(
   "/search",
   isAuthenticated,

@@ -3,49 +3,48 @@ import { getPaginationData } from "../utils/pagination.js";
 import { badRequest } from "../utils/badRequests.js";
 import { getProjectsByProjectID } from "./projectServices.js";
 
-export async function getTasksByUserId(
-  userId,
-  sort = "title",
-  order = "asc",
-  page = "1",
-  limit = "5",
-) {
-  const allowedColumns = ["title", "completed"];
-  const allowedOrder = ["ASC", "DESC"];
-  sort = sort.toLowerCase();
-  order = order.toUpperCase();
-  const pageNum = Number(page);
-  const limitNum = Number(limit);
-  const maxLimit = 100;
-  const invalidSort = !allowedColumns.includes(sort);
+export async function getTasksByUserId(userId, filters) {
+  const { title, completed, projectId, sort, order, page, limit } = filters;
+  const conditions = ["user_id = ?"];
+  const params = [userId];
+  if (title) {
+    conditions.push("LOWER(title) LIKE LOWER(?)");
+    params.push(`%${title}%`);
+  }
 
-  const invalidOrder = !allowedOrder.includes(order);
+  if (completed !== undefined) {
+    conditions.push("completed = ?");
+    params.push(completed ? 1 : 0);
+  }
 
-  const invalidPage =
-    Number.isNaN(pageNum) || !Number.isInteger(pageNum) || pageNum < 1;
-
-  const invalidLimit =
-    Number.isNaN(limitNum) ||
-    !Number.isInteger(limitNum) ||
-    limitNum < 1 ||
-    limitNum > maxLimit;
-
-  if (invalidSort) throw badRequest("Invalid sort field");
-  if (invalidOrder) throw badRequest("Invalid sort order. Use ASC or DESC");
-  if (invalidPage) throw badRequest("Page must be a positive integer");
-  if (invalidLimit)
-    throw badRequest("Limit must be an integer between 1 and 100");
-  const offset = (pageNum - 1) * limitNum;
+  if (projectId) {
+    conditions.push("project_id = ?");
+    params.push(projectId);
+  }
+  const whereClause = conditions.join(" AND ");
+  const offset = (page - 1) * limit;
   const [userData, paginationData] = await Promise.all([
     database.all(
-      `SELECT * FROM tasks 
-        WHERE user_id = ?
-        ORDER BY ${sort} ${order}
-        LIMIT ? OFFSET ?
+      `
+        SELECT *
+        FROM tasks
+        WHERE ${whereClause}
+        ORDER BY ${sort} ${order.toUpperCase()}
+        LIMIT ?
+        OFFSET ?
         `,
-      [userId, limitNum, offset],
+      [...params, limit, offset],
     ),
-    getPaginationData(userId, pageNum, limitNum),
+    getPaginationData(
+      `
+        SELECT COUNT(*) AS totalItems
+        FROM tasks
+        WHERE ${whereClause}
+        `,
+      params,
+      page,
+      limit,
+    ),
   ]);
   return {
     data: userData,
