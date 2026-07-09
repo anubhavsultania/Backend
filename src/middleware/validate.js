@@ -12,6 +12,7 @@ export function validate(schema, location) {
       err.details = result.error.format();
       return next(err);
     }
+    req.validatedData ??= {};
     req.validatedData[location] = result.data;
     next();
   };

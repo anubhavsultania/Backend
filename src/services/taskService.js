@@ -1,6 +1,6 @@
 import * as database from "../database/database.js";
 import { getPaginationData } from "../utils/pagination.js";
-import { badRequest } from "../utils/badRequests.js";
+import { notFound } from "../utils/httpErrors.js";
 import { getProjectsByProjectID } from "./projectServices.js";
 
 export async function getTasksByUserId(userId, filters) {
@@ -86,15 +86,11 @@ export function moveTaskToInbox(userId, oldprojectId, newProjectId) {
 export async function moveTaskToNewProject(taskId, userId, newProjectId) {
   const task = await getTasksByTaskId(userId, taskId);
   if (!task) {
-    const err = new Error("Task not found");
-    err.status = 404;
-    throw err;
+    throw notFound("Task not found");
   }
   const project = await getProjectsByProjectID(userId, newProjectId);
   if (!project) {
-    const err = new Error("Project not found");
-    err.status = 404;
-    throw err;
+    throw notFound("Task not found");
   }
 
   return database.run(

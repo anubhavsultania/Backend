@@ -1,5 +1,9 @@
 import * as database from "../database/database.js";
-import { translateDatabaseError } from "../utils/badRequests.js";
+import {
+  forbidden,
+  notFound,
+  translateDatabaseError,
+} from "../utils/httpErrors.js";
 import { moveTaskToInbox } from "./taskService.js";
 
 export function createDefaultProject(userId) {
@@ -41,14 +45,10 @@ export async function deleteProjectWithID(userId, projectId) {
     const result = await getProjectsByProjectID(userId, projectId);
     if (!result) {
       // No row matched
-      const error = new Error("Project not found");
-      error.status = 404;
-      throw error;
+      throw notFound("Project not found");
     }
     if (result.type == "INBOX") {
-      const error = new Error("This is default project and can't be deleted");
-      error.status = 403;
-      throw error;
+      throw forbidden("This is default project and can't be deleted");
     }
     const { id: newProjectId } = await getProjectsByProjectType(
       userId,
@@ -78,9 +78,7 @@ export async function renameProjectWithId(userId, projectId, title) {
   const project = await getProjectsByProjectID(userId, projectId);
   if (!project) {
     // No row matched
-    const error = new Error("Project not found");
-    error.status = 404;
-    throw error;
+    throw notFound("Project not found");
   }
   return database.run(
     `
