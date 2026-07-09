@@ -2,6 +2,7 @@ import * as database from "../database/database.js";
 import { getPaginationData } from "../utils/pagination.js";
 import { notFound } from "../utils/httpErrors.js";
 import { getProjectsByProjectID } from "./projectServices.js";
+import * as taskRepositories from "../repositories/taskRepositories.js";
 
 export async function getTasksByUserId(userId, filters) {
   const { title, completed, projectId, sort, order, page, limit } = filters;
@@ -71,16 +72,8 @@ export function getTasksByTaskId(userId, taskId) {
   );
 }
 
-export function moveTaskToInbox(userId, oldprojectId, newProjectId) {
-  return database.run(
-    `
-    UPDATE tasks
-    SET project_id = ?
-    WHERE user_id = ?
-    AND project_id = ?
-  `,
-    [newProjectId, userId, oldprojectId],
-  );
+export function moveTaskToInbox(newProjectId, userId, oldprojectId) {
+  return taskRepositories.moveTask(newProjectId, userId, oldprojectId);
 }
 
 export async function moveTaskToNewProject(taskId, userId, newProjectId) {

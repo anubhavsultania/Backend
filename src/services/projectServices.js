@@ -4,113 +4,76 @@ import {
   notFound,
   translateDatabaseError,
 } from "../utils/httpErrors.js";
-import { moveTaskToInbox } from "./taskService.js";
+
+import * as projectRepositories from "../repositories/projectRepositories.js";
+import * as taskRepositories from "../repositories/taskRepositories.js";
 
 export function createDefaultProject(userId) {
-  return database.run(
-    `INSERT INTO projects (name, user_id, type)
-          VALUES ('Inbox', ?, 'INBOX')`,
-    [userId],
-  );
+  return projectRepositories.createProject(userId, "Inbox", "INBOX");
 }
 
 export function getProjectsByUserId(userId) {
-  return database.all(
-    `
-    SELECT id, name
-    FROM projects
-    WHERE user_id = ?
-    `,
-    [userId],
-  );
+  return projectRepositories.listProjects(userId);
 }
 
 export async function createNewProject(userId, title) {
   try {
-    return database.run(
-      `
-      INSERT INTO projects (type, name, user_id)
-       VALUES ('NORMAL', ?, ?)
-       `,
-      [title, userId],
-    );
+    await projectRepositories.createProject(userId, title, "NORMAL");
   } catch (err) {
     translateDatabaseError(err, "Project");
   }
 }
 
-export async function deleteProjectWithID(userId, projectId) {
-  try {
-    await database.beginTransaction();
-    const result = await getProjectsByProjectID(userId, projectId);
-    if (!result) {
-      // No row matched
-      throw notFound("Project not found");
-    }
-    if (result.type == "INBOX") {
-      throw forbidden("This is default project and can't be deleted");
-    }
-    const { id: newProjectId } = await getProjectsByProjectType(
-      userId,
-      "INBOX",
-    );
-    await moveTaskToInbox(userId, projectId, newProjectId);
-    await database.run(
-      `
-    DELETE FROM projects 
-    WHERE user_id = ?
-    AND id = ?
-    `,
-      [userId, projectId],
-    );
-    await database.commitTransaction();
-  } catch (error) {
-    try {
-      await database.rollbackTransaction();
-    } catch (error) {
-      console.log("Rollback failed during deletion");
-    }
-    throw error;
-  }
-}
+export async function renameProjectById(userId, projectId, title) {
+  const project = await projectRepositories.getProjectById(userId, projectId);
 
-export async function renameProjectWithId(userId, projectId, title) {
-  const project = await getProjectsByProjectID(userId, projectId);
   if (!project) {
-    // No row matched
     throw notFound("Project not found");
   }
-  return database.run(
-    `
-      UPDATE projects
-      SET name = ?
-      WHERE user_id = ?
-      AND id = ?
-    `,
-    [title, userId, projectId],
-  );
+
+  try {
+    await projectRepositories.renameProject(userId, projectId, title);
+  } catch (err) {
+    translateDatabaseError(err, "Project");
+  }
 }
 
-export function getProjectsByProjectID(userId, projectId) {
-  return database.get(
-    `
-      SELECT type, id
-      FROM projects
-      WHERE user_id = ?
-      AND id = ? 
-    `,
-    [userId, projectId],
-  );
-}
+export async function deleteProjectById(userId, projectId) {
+  try {
+    await database.beginTransaction();
 
-export function getProjectsByProjectType(userId, type) {
-  return database.get(
-    `
-      SELECT *
-      FROM projects
-      WHERE user_id = ?
-      AND type = ? 
-    `,
-    [userId, type],
-  );
+    const project = await projectRepositories.getProjectById(userId, projectId);
+
+    if (!project) {
+      throw notFound("Project not found");
+    }
+
+    if (project.type === "INBOX") {
+      throw forbidden("Default project cannot be deleted.");
+    }
+
+    const inboxProject = await projectRepositories.getInboxProject(userId);
+
+    if (!inboxProject) {
+      throw new Error("Inbox project is missing.");
+    }
+
+    await taskRepositories.moveTasksToProject(
+      userId,
+      projectId,
+      inboxProject.id,
+    );
+
+    await projectRepositories.deleteProject(userId, projectId);
+
+    await database.commitTransaction();
+  } catch (err) {
+    try {
+      await database.rollbackTransaction();
+    } catch (rollbackErr) {
+      console.error("Rollback failed:", rollbackErr);
+    }
+
+    throw err;
+  }
 }
