@@ -1,16 +1,13 @@
-import db from "../db.js";
-import {
-  getTasksByUserId,
-  searchTasksByTitle,
-  getTasksByTaskId,
-  moveTaskToNewProject,
-} from "../services/taskService.js";
+import * as taskServices from "../services/taskServices.js";
 
 export async function getTasks(req, res, next) {
   try {
     const userId = req.session.userId;
 
-    const result = await getTasksByUserId(userId, req.validatedData.query);
+    const result = await taskServices.getTasksByUserId(
+      userId,
+      req.validatedData.query,
+    );
 
     return res.json(result);
   } catch (err) {
@@ -18,41 +15,83 @@ export async function getTasks(req, res, next) {
   }
 }
 
-export async function searchTasks(req, res, next) {
+export async function getTask(req, res, next) {
   try {
-    const { title } = req.validatedData;
     const userId = req.session.userId;
-    const searchResult = await searchTasksByTitle(title, userId);
-    return res.json(searchResult);
-  } catch (error) {
-    next(error);
+    const taskId = req.validatedData.params.id;
+
+    const task = await taskServices.getTaskById(userId, taskId);
+
+    return res.json(task);
+  } catch (err) {
+    next(err);
   }
 }
 
-export async function getTasksbyId(req, res, next) {
+export async function createTask(req, res, next) {
   try {
     const userId = req.session.userId;
-    const taskId = req.params.id;
-    const tasks = await getTasksByTaskId(userId, taskId);
-    if (!tasks) {
-      return res.status(404).json({
-        message: "Task not found",
-      });
-    }
-    res.json(tasks);
-  } catch (error) {
-    next(error);
+    const { title, projectId } = req.validatedData.body;
+
+    await taskServices.createTask(userId, title, projectId);
+
+    return res.sendStatus(201);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function renameTask(req, res, next) {
+  try {
+    const userId = req.session.userId;
+    const taskId = req.validatedData.params.id;
+    const { title } = req.validatedData.body;
+
+    await taskServices.renameTask(userId, taskId, title);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteTask(req, res, next) {
+  try {
+    const userId = req.session.userId;
+    const taskId = req.validatedData.params.id;
+
+    await taskServices.deleteTask(userId, taskId);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function completeTask(req, res, next) {
+  try {
+    const userId = req.session.userId;
+    const taskId = req.validatedData.params.id;
+
+    await taskServices.completeTask(userId, taskId);
+
+    return res.sendStatus(204);
+  } catch (err) {
+    next(err);
   }
 }
 
 export async function moveTask(req, res, next) {
   try {
-    const taskId = req.validatedData.params.id;
-    const newProjectId = req.validatedData.body.id;
     const userId = req.session.userId;
-    await moveTaskToNewProject(taskId, userId, newProjectId);
+
+    const taskId = req.validatedData.params.id;
+    const { id: projectId } = req.validatedData.body;
+
+    await taskServices.moveTaskToNewProject(userId, taskId, projectId);
+
     return res.sendStatus(204);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 }
