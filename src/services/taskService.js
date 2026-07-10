@@ -1,98 +1,88 @@
-import * as database from "../database/database.js";
 import { getPaginationData } from "../utils/pagination.js";
 import { notFound } from "../utils/httpErrors.js";
-import { getProjectsByProjectID } from "./projectServices.js";
+
 import * as taskRepositories from "../repositories/taskRepositories.js";
+import * as projectRepositories from "../repositories/projectRepositories.js";
 
 export async function getTasksByUserId(userId, filters) {
-  const { title, completed, projectId, sort, order, page, limit } = filters;
-  const conditions = ["user_id = ?"];
-  const params = [userId];
-  if (title) {
-    conditions.push("LOWER(title) LIKE LOWER(?)");
-    params.push(`%${title}%`);
-  }
+  const { page, limit } = filters;
 
-  if (completed !== undefined) {
-    conditions.push("completed = ?");
-    params.push(completed ? 1 : 0);
-  }
-
-  if (projectId) {
-    conditions.push("project_id = ?");
-    params.push(projectId);
-  }
-  const whereClause = conditions.join(" AND ");
-  const offset = (page - 1) * limit;
-  const [userData, paginationData] = await Promise.all([
-    database.all(
-      `
-        SELECT *
-        FROM tasks
-        WHERE ${whereClause}
-        ORDER BY ${sort} ${order.toUpperCase()}
-        LIMIT ?
-        OFFSET ?
-        `,
-      [...params, limit, offset],
-    ),
-    getPaginationData(
-      `
-        SELECT COUNT(*) AS totalItems
-        FROM tasks
-        WHERE ${whereClause}
-        `,
-      params,
-      page,
-      limit,
-    ),
+  const [tasks, { totalItems }] = await Promise.all([
+    taskRepositories.listTasks(userId, filters),
+    taskRepositories.countTasks(userId, filters),
   ]);
+
   return {
-    data: userData,
-    pagination: paginationData,
+    data: tasks,
+    pagination: getPaginationData(totalItems, page, limit),
   };
 }
 
-export function searchTasksByTitle(title, userId) {
-  const searchPattern = `%${title}%`;
-  return database.all(
-    `SELECT id, title FROM tasks
-        WHERE LOWER(title) like LOWER(?)
-        AND user_id = ?`,
-    [searchPattern, userId],
-  );
+export function searchTasksByTitle(userId, title) {
+  return taskRepositories.listTasks(userId, {
+    title,
+    completed: undefined,
+    projectId: undefined,
+    sort: "title",
+    order: "asc",
+    page: 1,
+    limit: 100,
+  });
 }
 
-export function getTasksByTaskId(userId, taskId) {
-  return database.get(
-    `SELECT * FROM tasks WHERE user_id = ?
-        AND id = ?
-    `,
-    [userId, taskId],
-  );
-}
+export async function getTaskById(userId, taskId) {
+  const task = await taskRepositories.getTaskById(userId, taskId);
 
-export function moveTaskToInbox(newProjectId, userId, oldprojectId) {
-  return taskRepositories.moveTask(newProjectId, userId, oldprojectId);
-}
-
-export async function moveTaskToNewProject(taskId, userId, newProjectId) {
-  const task = await getTasksByTaskId(userId, taskId);
   if (!task) {
     throw notFound("Task not found");
   }
-  const project = await getProjectsByProjectID(userId, newProjectId);
-  if (!project) {
+
+  return task;
+}
+
+export async function createTask(userId, title, projectId = null) {
+  return taskRepositories.createTask(userId, title, projectId);
+}
+
+export async function renameTask(userId, taskId, title) {
+  await getTaskById(userId, taskId);
+
+  return taskRepositories.renameTask(userId, taskId, title);
+}
+
+export async function deleteTask(userId, taskId) {
+  await getTaskById(userId, taskId);
+
+  return taskRepositories.deleteTask(userId, taskId);
+}
+
+export async function completeTask(userId, taskId) {
+  await getTaskById(userId, taskId);
+
+  return taskRepositories.completeTask(userId, taskId, true);
+}
+
+export async function moveTaskToNewProject(userId, taskId, newProjectId) {
+  const [task, project] = await Promise.all([
+    taskRepositories.getTaskById(userId, taskId),
+    projectRepositories.getProjectById(userId, newProjectId),
+  ]);
+
+  if (!task) {
     throw notFound("Task not found");
   }
 
-  return database.run(
-    `
-    UPDATE tasks
-    SET project_id = ?
-    WHERE user_id = ?
-    AND id = ?
-  `,
-    [newProjectId, userId, taskId],
+  if (!project) {
+    throw notFound("Project not found");
+  }
+
+  return taskRepositories.moveTaskToProject(userId, taskId, newProjectId);
+}
+
+export function moveTasksToInbox(userId, oldProjectId, inboxProjectId) {
+  return taskRepositories.moveTasksToProject(
+    userId,
+    oldProjectId,
+    inboxProjectId,
   );
 }
