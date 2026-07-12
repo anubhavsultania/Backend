@@ -1,14 +1,15 @@
-import {
-  createNewProject,
-  deleteProjectById,
-  getProjectsByUserId,
-  renameProjectWithId,
-} from "../services/projectServices";
+// import {
+//   createNewProject,
+//   deleteProjectById,
+//   getProjectsByUserId,
+//   renameProjectWithId,
+// } from "../services/projectServices";
+import { projectService } from "../container.js";
 
 export async function getProjects(req, res, next) {
   try {
     const userId = req.session.userId;
-    const result = await getProjectsByUserId(userId);
+    const result = await projectService.getProjectsByUserId(userId);
     return res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -19,7 +20,10 @@ export async function createProject(req, res, next) {
   try {
     const userId = req.session.userId;
     const { title } = req.validatedData.body;
-    const { lastID: newId } = await createNewProject(userId, title);
+    const { lastID: newId } = await projectService.createNewProject(
+      userId,
+      title,
+    );
     return res.status(201).json({
       id: newId,
       name: title,
@@ -33,7 +37,7 @@ export async function deleteProject(req, res, next) {
   try {
     const userId = req.session.userId;
     const projectId = req.validatedData.params.id;
-    await deleteProjectById(userId, projectId);
+    await projectService.deleteProjectById(userId, projectId);
     return res.sendStatus(204);
   } catch (error) {
     next(error);
@@ -45,7 +49,7 @@ export async function renameProject(req, res, next) {
     const userId = req.session.userId;
     const projectId = req.validatedData.params.id;
     const { title } = req.validatedData.body;
-    await renameProjectWithId(userId, projectId, title);
+    await projectService.renameProjectById(userId, projectId, title);
     return res.sendStatus(204);
   } catch (error) {
     next(error);

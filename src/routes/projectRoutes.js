@@ -25,3 +25,5 @@ router.patch(
   validate(titleSchema, "body"),
   renameProject,
 );
+
+export default router;

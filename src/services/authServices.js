@@ -1,6 +1,6 @@
 import * as database from "../database/database.js";
 import bcrypt from "bcrypt";
-import { createDefaultProject } from "./projectServices.js";
+import { projectService } from "../container.js";
 
 export async function authenticateUser(email, password) {
   const user = await database.get(
@@ -28,7 +28,7 @@ export async function registerUserInDb(email, password) {
              VALUES (?, ?)`,
       [email, hashedPassword],
     );
-    await createDefaultProject(userId);
+    await projectService.createDefaultProject(userId);
     await database.commitTransaction();
     return userId;
   } catch (err) {
