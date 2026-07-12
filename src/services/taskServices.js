@@ -11,7 +11,7 @@ export async function getTasksByUserId(userId, filters) {
     taskRepositories.listTasks(userId, filters),
     taskRepositories.countTasks(userId, filters),
   ]);
-
+  console.log(totalItems);
   return {
     data: tasks,
     pagination: getPaginationData(totalItems, page, limit),
@@ -40,7 +40,11 @@ export async function getTaskById(userId, taskId) {
   return task;
 }
 
-export async function createTask(userId, title, projectId = null) {
+export async function createTask(userId, title, projectId) {
+  const project = await projectRepositories.getProjectById(userId, projectId);
+  if (!project) {
+    throw notFound("Project not found");
+  }
   return taskRepositories.createTask(userId, title, projectId);
 }
 

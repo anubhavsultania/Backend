@@ -1,7 +1,6 @@
 import * as database from "../database/database.js";
 
-export async function getPaginationData(sql, params, page, limit) {
-  const { totalItems } = await database.get(sql, params);
+export function getPaginationData(totalItems, page, limit) {
   const totalPages = Math.max(1, Math.ceil(totalItems / limit));
 
   return {

@@ -20,3 +20,11 @@ export const getTasksSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().min(1).max(100).default(5),
 });
+
+export const createTaskSchema = z.object({
+  title: z.string().trim().min(1).max(100),
+  projectId: z.coerce.number().int().positive(),
+});
+export const moveTaskSchema = z.object({
+  projectId: z.coerce.number().int().positive(),
+});
