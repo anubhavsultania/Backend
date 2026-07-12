@@ -15,18 +15,20 @@ export async function getTasks(req, res, next) {
   }
 }
 
-export async function getTask(req, res, next) {
-  try {
-    const userId = req.session.userId;
-    const taskId = req.validatedData.params.id;
+// const spy = getTask.jest.spy();
+// const req = {
+//   userId: 12,
+//   taskId: 13,
+// };
 
-    const task = await taskServices.getTaskById(userId, taskId);
+// const res = {
+//   json: jest.fn(),
+// };
 
-    return res.json(task);
-  } catch (err) {
-    next(err);
-  }
-}
+// await getTask(req, res);
+// spy.getTasks.tohavebeenCalledWith(req, res, next);
+// spy.getTasksnyId.tohavebeenCalledWith(req, res, next);
+// spy.getTasks.next.tonothavebeenCalledWith(req, res, next);
 
 export async function createTask(req, res, next) {
   try {

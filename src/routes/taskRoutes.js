@@ -10,7 +10,6 @@ import {
   titleSchema,
   createTaskSchema,
   moveTaskSchema,
-  completeTaskSchema,
   getTasksSchema,
 } from "../validators/taskValidators.js";
 
@@ -23,12 +22,12 @@ router.get(
   taskControllers.getTasks,
 );
 
-router.get(
-  "/:id",
-  isAuthenticated,
-  validate(idSchema, "params"),
-  taskControllers.getTask,
-);
+// router.get(
+//   "/:id",
+//   isAuthenticated,
+//   validate(idSchema, "params"),
+//   taskControllers.getTask,
+// );
 
 router.post(
   "/",
@@ -56,7 +55,6 @@ router.patch(
   "/:id/complete",
   isAuthenticated,
   validate(idSchema, "params"),
-  validate(completeTaskSchema, "body"),
   taskControllers.completeTask,
 );
 
