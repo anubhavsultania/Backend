@@ -1,5 +1,6 @@
 // container.js
 
+import { createProjectController } from "./controllers/projectController.js";
 import * as database from "./database/database.js";
 
 import * as projectRepositories from "./repositories/projectRepositories.js";
@@ -12,3 +13,5 @@ export const projectService = createProjectService({
   projectRepositories,
   taskRepositories,
 });
+
+export const projectController = createProjectController(projectService);
