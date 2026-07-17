@@ -46,126 +46,172 @@
 
 import { describe, beforeEach, expect, vi, test } from "vitest";
 import { createProjectController } from "../src/controllers/projectController.js";
+import session from "express-session";
 
-describe("ProjectController.getProjects", () => {
+describe("ProjectController", () => {
   let req;
   let res;
   let next;
-  let projectService;
   let controller;
-  beforeEach(() => {
-    req = {
-      session: {
-        userId: 1,
-      },
-    };
-    res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    };
-    next = vi.fn();
-    projectService = {
-      getProjectsByUserId: vi.fn(),
-    };
-    controller = createProjectController({ projectService });
-  });
-  test("returns all projects for the logged-in user", async () => {
-    projectService.getProjectsByUserId.mockResolvedValue({
-      id: 2,
-      name: "Inbox",
-    });
-    await controller.getProjects(req, res, next);
-    expect(projectService.getProjectsByUserId).toHaveBeenCalledWith(1);
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ id: 2, name: "Inbox" });
-    expect(next).not.toHaveBeenCalled();
-  });
-  test("calls next when service throws", async () => {
-    projectService.getProjectsByUserId.mockRejectedValue(new Error());
-    await controller.getProjects(req, res, next);
-
-    expect(next).toHaveBeenCalledTimes(1);
-
-    expect(next).toHaveBeenCalledWith(expect.any(Error));
-  });
-});
-
-describe("ProjectController.createProject", () => {
-  let req;
-  let res;
-  let next;
   let projectService;
-  let controller;
-
-  beforeEach(() => {
-    req = {
-      session: {
-        userId: 1,
-      },
-      validatedData: {
-        body: {
-          title: "Inbox",
+  describe("getProjects", () => {
+    beforeEach(() => {
+      req = {
+        session: {
+          userId: 1,
         },
-      },
-    };
+      };
+      res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+      next = vi.fn();
+      projectService = {
+        getProjectsByUserId: vi.fn(),
+      };
+      controller = createProjectController({ projectService });
+    });
+    test("returns all projects for the logged-in user", async () => {
+      projectService.getProjectsByUserId.mockResolvedValue({
+        id: 2,
+        name: "Inbox",
+      });
+      await controller.getProjects(req, res, next);
+      expect(projectService.getProjectsByUserId).toHaveBeenCalledWith(1);
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ id: 2, name: "Inbox" });
+      expect(next).not.toHaveBeenCalled();
+    });
+    test("calls next when service throws", async () => {
+      projectService.getProjectsByUserId.mockRejectedValue(new Error());
+      await controller.getProjects(req, res, next);
 
-    res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn(),
-    };
+      expect(next).toHaveBeenCalledTimes(1);
 
-    next = vi.fn();
-
-    projectService = {
-      createNewProject: vi.fn(),
-    };
-
-    controller = createProjectController({ projectService });
+      expect(next).toHaveBeenCalledWith(expect.any(Error));
+    });
   });
 
-  test("creates a new project", async () => {
-    req.validatedData.body.title = "My Project";
+  describe("createProject", () => {
+    beforeEach(() => {
+      req = {
+        session: {
+          userId: 1,
+        },
+        validatedData: {
+          body: {
+            title: "Inbox",
+          },
+        },
+      };
 
-    projectService.createNewProject.mockResolvedValue({
-      lastID: 15,
+      res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+      };
+
+      next = vi.fn();
+
+      projectService = {
+        createNewProject: vi.fn(),
+      };
+
+      controller = createProjectController({ projectService });
     });
 
-    await controller.createProject(req, res, next);
+    test("creates a new project", async () => {
+      req.validatedData.body.title = "My Project";
 
-    expect(projectService.createNewProject).toHaveBeenCalledWith(
-      1,
-      "My Project",
-    );
+      projectService.createNewProject.mockResolvedValue({
+        lastID: 15,
+      });
 
-    expect(projectService.createNewProject).toHaveBeenCalledTimes(1);
+      await controller.createProject(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(201);
+      expect(projectService.createNewProject).toHaveBeenCalledWith(
+        1,
+        "My Project",
+      );
 
-    expect(res.json).toHaveBeenCalledWith({
-      id: 15,
-      name: "My Project",
+      expect(projectService.createNewProject).toHaveBeenCalledTimes(1);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+
+      expect(res.json).toHaveBeenCalledWith({
+        id: 15,
+        name: "My Project",
+      });
+
+      expect(next).not.toHaveBeenCalled();
     });
 
-    expect(next).not.toHaveBeenCalled();
+    test("calls next when service throws", async () => {
+      req.validatedData.body.title = "My Project";
+
+      const error = new Error("Database Error");
+
+      projectService.createNewProject.mockRejectedValue(error);
+
+      await controller.createProject(req, res, next);
+
+      expect(projectService.createNewProject).toHaveBeenCalledWith(
+        1,
+        "My Project",
+      );
+
+      expect(next).toHaveBeenCalledWith(error);
+
+      expect(res.status).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
+    });
   });
 
-  test("calls next when service throws", async () => {
-    req.validatedData.body.title = "My Project";
-
-    const error = new Error("Database Error");
-
-    projectService.createNewProject.mockRejectedValue(error);
-
-    await controller.createProject(req, res, next);
-
-    expect(projectService.createNewProject).toHaveBeenCalledWith(
-      1,
-      "My Project",
-    );
-
-    expect(next).toHaveBeenCalledWith(error);
-
-    expect(res.status).not.toHaveBeenCalled();
-    expect(res.json).not.toHaveBeenCalled();
+  describe("ProjectController.renameProjectById", () => {
+    beforeEach(() => {
+      req = {
+        session: {
+          userId: 1,
+        },
+        validatedData: {
+          params: {
+            id: 2,
+          },
+          body: {
+            title: "My new Project",
+          },
+        },
+      };
+      res = {
+        sendStatus: vi.fn(),
+      };
+      next = vi.fn();
+      projectService = {
+        renameProjectById: vi.fn(),
+      };
+      controller = createProjectController({ projectService });
+    });
+    test("rename a project", async () => {
+      projectService.renameProjectById.mockResolvedValue();
+      await controller.renameProject(req, res, next);
+      expect(projectService.renameProjectById).toHaveBeenCalledWith(
+        1,
+        2,
+        "My new Project",
+      );
+      expect(res.sendStatus).toHaveBeenCalledWith(204);
+      expect(next).not.toHaveBeenCalled();
+    });
+    test("calls next when service throws", async () => {
+      const error = new Error("Internal server error");
+      projectService.renameProjectById.mockRejectedValue(error);
+      await controller.renameProject(req, res, next);
+      expect(projectService.renameProjectById).toHaveBeenCalledWith(
+        1,
+        2,
+        "My new Project",
+      );
+      expect(res.sendStatus).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalledWith(error);
+    });
   });
 });
