@@ -77,7 +77,7 @@ describe("ProjectController.getProjects", () => {
     await controller.getProjects(req, res, next);
     expect(projectService.getProjectsByUserId).toHaveBeenCalledWith(1);
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith([{ id: 2, name: "Inbox" }]);
+    expect(res.json).toHaveBeenCalledWith({ id: 2, name: "Inbox" });
     expect(next).not.toHaveBeenCalled();
   });
   test("calls next when service throws", async () => {

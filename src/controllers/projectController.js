@@ -5,8 +5,8 @@
 //   renameProjectWithId,
 // } from "../services/projectServices";
 
-export function createProjectController(projectService) {
-  export async function getProjects(req, res, next) {
+export function createProjectController({ projectService }) {
+  async function getProjects(req, res, next) {
     try {
       const userId = req.session.userId;
       const result = await projectService.getProjectsByUserId(userId);
@@ -16,7 +16,7 @@ export function createProjectController(projectService) {
     }
   }
 
-  export async function createProject(req, res, next) {
+  async function createProject(req, res, next) {
     try {
       const userId = req.session.userId;
       const { title } = req.validatedData.body;
@@ -33,7 +33,7 @@ export function createProjectController(projectService) {
     }
   }
 
-  export async function deleteProject(req, res, next) {
+  async function deleteProject(req, res, next) {
     try {
       const userId = req.session.userId;
       const projectId = req.validatedData.params.id;
@@ -44,7 +44,7 @@ export function createProjectController(projectService) {
     }
   }
 
-  export async function renameProject(req, res, next) {
+  async function renameProject(req, res, next) {
     try {
       const userId = req.session.userId;
       const projectId = req.validatedData.params.id;
