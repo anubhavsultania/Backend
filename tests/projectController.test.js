@@ -46,7 +46,6 @@
 
 import { describe, beforeEach, expect, vi, test } from "vitest";
 import { createProjectController } from "../src/controllers/projectController.js";
-import session from "express-session";
 
 describe("ProjectController", () => {
   let req;
@@ -166,7 +165,7 @@ describe("ProjectController", () => {
     });
   });
 
-  describe("ProjectController.renameProjectById", () => {
+  describe("renameProject", () => {
     beforeEach(() => {
       req = {
         session: {
@@ -210,6 +209,44 @@ describe("ProjectController", () => {
         2,
         "My new Project",
       );
+      expect(res.sendStatus).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe("deleteProject", () => {
+    beforeEach(() => {
+      req = {
+        session: {
+          userId: 1,
+        },
+        validatedData: {
+          params: {
+            id: 2,
+          },
+        },
+      };
+      res = {
+        sendStatus: vi.fn(),
+      };
+      next = vi.fn();
+      projectService = {
+        deleteProjectById: vi.fn(),
+      };
+      controller = createProjectController({ projectService });
+    });
+    test("delete a project", async () => {
+      projectService.deleteProjectById.mockResolvedValue();
+      await controller.deleteProject(req, res, next);
+      expect(projectService.deleteProjectById).toHaveBeenCalledWith(1, 2);
+      expect(res.sendStatus).toHaveBeenCalledWith(204);
+      expect(next).not.toHaveBeenCalled();
+    });
+    test("calls next when service throws", async () => {
+      const error = new Error("Internal Server Error");
+      projectService.deleteProjectById.mockRejectedValue(error);
+      await controller.deleteProject(req, res, next);
+      expect(projectService.deleteProjectById).toHaveBeenCalledWith(1, 2);
       expect(res.sendStatus).not.toHaveBeenCalled();
       expect(next).toHaveBeenCalledWith(error);
     });
