@@ -45,7 +45,7 @@
 // With DI
 
 import { describe, beforeEach, expect, vi, test } from "vitest";
-import { createProjectController } from "../src/controllers/projectController.js";
+import { createProjectController } from "../../src/controllers/projectController.js";
 
 describe("ProjectController", () => {
   let req;

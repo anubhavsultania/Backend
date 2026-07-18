@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
-import { createProjectService } from "../src/services/projectServices.js";
+import { createProjectService } from "../../src/services/projectServices.js";
 
 describe("ProjectService.deleteProjectById", () => {
   let database;
