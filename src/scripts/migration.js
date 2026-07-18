@@ -1,7 +1,7 @@
 import db from "../db.js";
 import { runStep } from "../utils/logger.js";
 
-async function migrate() {
+export async function migrate(closeDb = true) {
   try {
     // Transaction
     await runStep("Enabling foreign keys", "PRAGMA foreign_keys = ON");
@@ -100,7 +100,8 @@ async function migrate() {
       console.error(`Rollback failed: ${rollbackErr.message}`);
     }
   } finally {
-    db.close();
+    if (closeDb) {
+      db.close();
+    }
   }
 }
-migrate();
