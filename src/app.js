@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import session from "express-session";
 import bcrypt from "bcrypt";
-import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
@@ -11,7 +10,7 @@ import projectRoutes from "./routes/projectRoutes.js";
 import db from "./db.js";
 import { isAuthenticated, isGuest } from "./middleware/auth.js";
 import errorHandler from "./middleware/errorHandler.js";
-
+import dotenv from "dotenv";
 dotenv.config();
 const app = express();
 
@@ -25,7 +24,7 @@ const __dirname = path.dirname(__filename);
 /* =========================
    Middleware
 ========================= */
-
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
@@ -47,12 +46,4 @@ app.use("/projects", projectRoutes);
 
 app.use(errorHandler);
 
-/* =========================
-   Start Server
-========================= */
-
-const PORT = process.env.PORT;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+export default app;
