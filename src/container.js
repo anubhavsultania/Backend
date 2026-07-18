@@ -14,4 +14,4 @@ export const projectService = createProjectService({
   taskRepositories,
 });
 
-export const projectController = createProjectController(projectService);
+export const projectController = createProjectController({ projectService });
