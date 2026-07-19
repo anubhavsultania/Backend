@@ -1,7 +1,6 @@
 import db from "../db.js";
 import { runStep } from "../utils/logger.js";
 
-console.log("Oh YEAh");
 export async function migrate(closeDb = true) {
   try {
     // Transaction

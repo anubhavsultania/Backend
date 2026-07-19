@@ -1,3 +1,3 @@
-import { migrate } from "../database/migration.js";
+import { migrate_01 } from "./003_add_task_indexes.js.js";
 
-await migrate();
+await migrate_01();
