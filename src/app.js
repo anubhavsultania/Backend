@@ -7,7 +7,6 @@ import authRoutes from "./routes/authRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
-import db from "./db.js";
 import { isAuthenticated, isGuest } from "./middleware/auth.js";
 import errorHandler from "./middleware/errorHandler.js";
 import dotenv from "dotenv";

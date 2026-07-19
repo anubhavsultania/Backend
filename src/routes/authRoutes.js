@@ -10,7 +10,6 @@ import {
   logoutUser,
   registerUser,
 } from "../controllers/authController.js";
-import db from "../db.js";
 import { isAuthenticated, isGuest } from "../middleware/auth.js";
 
 const router = express.Router();

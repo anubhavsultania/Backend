@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest",
+    "dev": "nodemon src/server.js",
+    "test": "cross-env NODE_ENV=test vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "migrate": "node src/scripts/migrate.js"
   },
   "keywords": [],
   "author": "",
@@ -24,9 +26,11 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "prettier": "^3.9.1",
+    "supertest": "^7.2.2",
     "vitest": "^4.1.10"
   }
 }

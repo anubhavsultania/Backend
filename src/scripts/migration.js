@@ -101,7 +101,12 @@ export async function migrate(closeDb = true) {
     }
   } finally {
     if (closeDb) {
-      db.close();
+      await new Promise((resolve, reject) => {
+        db.close((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
     }
   }
 }
