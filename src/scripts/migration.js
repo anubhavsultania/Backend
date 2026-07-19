@@ -9,6 +9,17 @@ export async function migrate(closeDb = true) {
 
     await runStep("Beginning transaction", "BEGIN TRANSACTION");
 
+    // Users
+    await runStep("Dropping Users table", "DROP TABLE IF EXISTS users");
+    await runStep(
+      "Creating Users table",
+      ` CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE,
+        password TEXT
+    )`,
+    );
+
     // Projects
     await runStep("Dropping projects table", "DROP TABLE IF EXISTS projects");
 
